@@ -11,54 +11,24 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class StoredServer {
-    private static List<StoredServer> servers;
-    public static void firstInit(){
-        if (servers != null) return;
-        servers = new ArrayList<>();
-        VelocityMain.getMain().getServer().getScheduler().buildTask(VelocityMain.getMain(), StoredServer::sendPings)
-                .delay(1, TimeUnit.SECONDS)
-                .repeat(15, TimeUnit.SECONDS)
-                .schedule();
-    }
-    private static void sendPings(){
-        for (RegisteredServer rs : VelocityMain.getMain().getServer().getAllServers()){
-            sendSinglePing(rs);
-        }
-    }
-    public static void sendSinglePing(RegisteredServer rs){
-        rs.ping().orTimeout(3, TimeUnit.SECONDS).handle((serverPing, throwable) -> {
-            remove(rs);
-            if (serverPing != null){
-                servers.add(new StoredServer(rs, serverPing.getFavicon().orElse(null), serverPing.getVersion(), serverPing.getDescriptionComponent()));
-            }
-            return null;
-        });
-    }
-
-    public static boolean remove(RegisteredServer rs){
-        for (StoredServer s : servers){
-            if (s.getServer() == rs){
-                servers.remove(s);
-                return true;
-            }
-        }
-        return false;
-    }
 
 
     private RegisteredServer server;
     private Favicon icon;
     private ServerPing.Version version;
     private Component MOTD;
+    private ServerPing.Players playerInfo;
 
-    public StoredServer(RegisteredServer server, @Nullable Favicon icon, ServerPing.Version version, Component MOTD) {
+    public StoredServer(RegisteredServer server, @Nullable Favicon icon, ServerPing.Version version, Component MOTD, ServerPing.Players playerInfo) {
         this.server = server;
         this.icon = icon;
         this.version = version;
         this.MOTD = MOTD;
+        this.playerInfo = playerInfo;
     }
 
     public RegisteredServer getServer() {
@@ -75,5 +45,23 @@ public class StoredServer {
 
     public Component getMOTD() {
         return MOTD;
+    }
+
+    public ServerPing.Players getPlayerInfo() {
+        return playerInfo;
+    }
+    public String toString(){
+        return server.getServerInfo().getName()+":"+icon.getBase64Url()+":"+version.getName()+":"+MOTD.toString()+":"+playerInfo.toString();
+    }
+
+    public boolean equals(StoredServer other){
+        if (other == null) return false;
+        if (other.server == null) return false;
+        if (other.server.getServerInfo().getName().equals(server.getServerInfo().getName())
+        &&other.icon.equals(getIcon())
+        &&other.version.equals(version)
+        &&other.playerInfo.equals(playerInfo)
+        &&other.getMOTD().equals(getMOTD())) return true;
+        return false;
     }
 }

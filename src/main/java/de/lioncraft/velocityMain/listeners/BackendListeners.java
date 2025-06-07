@@ -17,6 +17,7 @@ import com.velocitypowered.api.proxy.server.ServerPing;
 import com.velocitypowered.api.util.Favicon;
 import de.lioncraft.lionapi.messages.DM;
 import de.lioncraft.velocityMain.VelocityMain;
+import de.lioncraft.velocityMain.utils.ServerStorageHandler;
 import de.lioncraft.velocityMain.utils.StoredServer;
 
 import java.util.Base64;
@@ -33,7 +34,7 @@ public class BackendListeners {
     public void onPluginMessageFromBackend(PluginMessageEvent event) {
         if (!IDENTIFIER.equals(event.getIdentifier())) return;
 
-        VelocityMain.getMain().getLogger().info("Handling Input: {}", new String(event.getData()));
+        VelocityMain.getMain().getLogger().debug("Handling Input: {}", new String(event.getData()));
 
         event.setResult(PluginMessageEvent.ForwardResult.handled());
 
@@ -90,10 +91,10 @@ public class BackendListeners {
 
     @Subscribe
     public void onRegister(ServerRegisteredEvent e){
-        StoredServer.sendSinglePing(e.registeredServer());
+        ServerStorageHandler.sendSinglePing(e.registeredServer());
     }
     @Subscribe
     public void onUnregister(ServerUnregisteredEvent e){
-        StoredServer.sendSinglePing(e.unregisteredServer());
+        ServerStorageHandler.sendSinglePing(e.unregisteredServer());
     }
 }
