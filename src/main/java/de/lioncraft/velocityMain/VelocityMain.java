@@ -8,14 +8,22 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import de.lioncraft.lionapi.messageHandling.lionchat.ChannelConfiguration;
+import de.lioncraft.lionapi.messageHandling.lionchat.LionChat;
+import de.lioncraft.lionapi.messages.ColorGradient;
+import de.lioncraft.lionapi.velocity.data.ObjectTransferManager;
 import de.lioncraft.velocityMain.commands.DebugCommand;
 import de.lioncraft.velocityMain.commands.LobbyCommand;
 import de.lioncraft.velocityMain.data.Config;
 import de.lioncraft.velocityMain.listeners.BackendListeners;
+import de.lioncraft.velocityMain.listeners.MSGHandler;
 import de.lioncraft.velocityMain.listeners.PacketListeners;
 import de.lioncraft.velocityMain.listeners.PlayerListeners;
 import de.lioncraft.velocityMain.utils.GUIElementRenderer;
 import de.lioncraft.velocityMain.utils.ServerStorageHandler;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -57,6 +65,10 @@ public class VelocityMain {
         server.getChannelRegistrar().register(BackendListeners.IDENTIFIER);
         server.getChannelRegistrar().register(BackendListeners.FAVICONS);
 
+        registerLionChatChannels();
+
+        ObjectTransferManager.registerListener("msg", new MSGHandler());
+
         CommandManager cm = server.getCommandManager();
         cm.register(cm.metaBuilder("lobby").aliases("l").plugin(this).build(), new LobbyCommand());
         cm.register(cm.metaBuilder("debug").plugin(this).build(), new DebugCommand());
@@ -89,6 +101,26 @@ public class VelocityMain {
 
     public static VelocityMain getMain() {
         return main;
+    }
+
+    private void registerLionChatChannels(){
+        LionChat.registerChannel("system", new ChannelConfiguration(false,
+                TextColor.color(100, 200, 200),
+                ColorGradient.getNewGradiant("LionSystems", TextColor.color(250, 0, 250), TextColor.color(100, 50, 255)),
+                true));
+        LionChat.registerChannel("debug", new ChannelConfiguration(true,
+                TextColor.color(100, 100, 100),
+                Component.text("DEBUG", NamedTextColor.DARK_BLUE),
+                false));
+        LionChat.registerChannel("msg", new ChannelConfiguration(false, TextColor.color(150, 150, 255),
+                Component.text("MSG", TextColor.color(60, 60, 255)),
+                true));
+        LionChat.registerChannel("teammsg", new ChannelConfiguration(false, TextColor.color(180, 255, 180),
+                Component.text("TeamMSG", TextColor.color(60, 255, 60)),
+                true));
+        LionChat.registerChannel("log", new ChannelConfiguration(true, TextColor.color(180, 180, 180),
+                Component.text("LOG", TextColor.color(100, 100, 100)),
+                false));
     }
     public static boolean saveResourceIfNotExists(String resource, Path outputPath) {
         if (resource == null || resource.isEmpty() || !resource.startsWith("/")) {

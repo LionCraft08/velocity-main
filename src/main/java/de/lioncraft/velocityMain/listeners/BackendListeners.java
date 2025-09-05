@@ -16,6 +16,7 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerPing;
 import com.velocitypowered.api.util.Favicon;
 import de.lioncraft.lionapi.messages.DM;
+import de.lioncraft.lionapi.velocity.data.ObjectTransferManager;
 import de.lioncraft.velocityMain.VelocityMain;
 import de.lioncraft.velocityMain.utils.ServerStorageHandler;
 import de.lioncraft.velocityMain.utils.StoredServer;
@@ -29,9 +30,14 @@ public class BackendListeners {
 
     public static final MinecraftChannelIdentifier IDENTIFIER = MinecraftChannelIdentifier.create("lionapi", "main");
     public static final MinecraftChannelIdentifier FAVICONS = MinecraftChannelIdentifier.create("lionapi","favicons");
+    public static final MinecraftChannelIdentifier OBJECT_TRANSFER = MinecraftChannelIdentifier.create("lionapi","objecttransfer");
 
     @Subscribe
     public void onPluginMessageFromBackend(PluginMessageEvent event) {
+        if (OBJECT_TRANSFER.equals(event.getIdentifier())){
+            ObjectTransferManager.onObjectReceive(new String(event.getData()), event.getSource());
+        }
+
         if (!IDENTIFIER.equals(event.getIdentifier())) return;
 
         VelocityMain.getMain().getLogger().debug("Handling Input: {}", new String(event.getData()));
